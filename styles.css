@@ -198,10 +198,10 @@ section{padding:clamp(3.5rem,9vh,6rem) 0;border-top:1px solid var(--hairline)}
 }
 .game__sig{font-family:var(--data);font-size:.62rem;letter-spacing:.2em;color:var(--brass);
   text-transform:uppercase;margin-bottom:.9rem}
-.game h3{font-family:var(--display);text-transform:uppercase;font-weight:700;
-  font-size:1.65rem;line-height:.95;margin:0 0 .4rem;letter-spacing:.01em}
-.game .sub{font-family:var(--display);font-weight:600;font-size:1rem;
-  text-transform:uppercase;color:var(--ash);letter-spacing:.04em;margin-bottom:.8rem}
+.game h3{font-family:var(--display);text-transform:uppercase;font-weight:600;
+  font-size:1.1rem;line-height:.95;margin:0 0 .15rem;letter-spacing:.04em;color:var(--ash)}
+.game .sub{font-family:var(--display);font-weight:700;font-size:1.7rem;
+  text-transform:uppercase;color:var(--brass);letter-spacing:.01em;margin-bottom:.8rem;line-height:.95}
 .game .era{font-family:var(--data);font-size:.62rem;color:var(--ash);letter-spacing:.12em;
   text-transform:uppercase;margin-bottom:.9rem}
 .game p{font-size:.96rem;color:#c4bca8;line-height:1.55;margin:0 0 1.2rem;flex-grow:1}
