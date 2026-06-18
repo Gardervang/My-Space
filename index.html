@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wound and Steel — Gritty tabletop wargames, rules free</title>
+<meta name="description" content="Wound and Steel is an independent tabletop wargame studio. Grounded combat across history, dark fantasy, and grim futures. Core rules are free to download, print, and play.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gunmetal:#16140F;
+    --steel:#211E17;
+    --steel-2:#2B2820;
+    --bone:#E8E1D0;
+    --brass:#B08D4F;
+    --brass-dim:#7d6438;
+    --oxblood:#7E2B22;
+    --ash:#8A8170;
+    --hairline:rgba(176,141,79,.22);
+
+    --display:"Saira Condensed",system-ui,sans-serif;
+    --lore:"Spectral",Georgia,serif;
+    --data:"Space Mono",ui-monospace,monospace;
+
+    --rail:clamp(46px,7vw,92px);
+    --maxw:1180px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+  body{
+    margin:0;
+    background:var(--gunmetal);
+    color:var(--bone);
+    font-family:var(--lore);
+    font-size:18px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* faint paper grain + vignette, grounds the "field manual" surface */
+  body::before{
+    content:"";
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(176,141,79,.05), transparent 55%),
+      radial-gradient(140% 120% at 80% 100%, rgba(126,43,34,.07), transparent 60%);
+  }
+  main{position:relative;z-index:1}
+
+  a{color:inherit}
+  ::selection{background:var(--oxblood);color:var(--bone)}
+
+  .data{font-family:var(--data);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--brass)}
+
+  /* ---- THE RANGE RULER : signature element ---- */
+  .ruler{
+    position:fixed;top:0;left:0;bottom:0;width:var(--rail);z-index:5;
+    border-right:1px solid var(--hairline);
+    background:linear-gradient(var(--gunmetal),var(--gunmetal));
+    pointer-events:none;
+    display:flex;flex-direction:column;
+  }
+  .ruler__ticks{position:absolute;inset:0;overflow:hidden}
+  .ruler__tick{position:absolute;left:0;height:1px;background:var(--hairline)}
+  .ruler__tick.major{background:var(--brass-dim);width:60%}
+  .ruler__tick.minor{width:28%}
+  .ruler__num{
+    position:absolute;left:50%;transform:translateX(-50%) rotate(-90deg);
+    transform-origin:center;
+    font-family:var(--data);font-size:.62rem;letter-spacing:.1em;color:var(--brass);
+    white-space:nowrap;
+  }
+  .ruler__marker{
+    position:absolute;left:0;width:100%;height:2px;background:var(--oxblood);
+    box-shadow:0 0 12px rgba(126,43,34,.8);
+    transition:top .15s linear;
+  }
+  .ruler__marker::after{
+    content:"";position:absolute;right:6px;top:-3px;width:0;height:0;
+    border-top:4px solid transparent;border-bottom:4px solid transparent;
+    border-right:6px solid var(--oxblood);
+  }
+  @media (prefers-reduced-motion:reduce){.ruler__marker{transition:none}}
+
+  .shell{margin-left:var(--rail)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,64px)}
+
+  /* ---- top bar ---- */
+  header.bar{
+    position:sticky;top:0;z-index:4;margin-left:var(--rail);
+    background:rgba(22,20,15,.86);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .bar__in{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:.85rem clamp(20px,5vw,64px);max-width:var(--maxw);margin:0 auto}
+  .brand{font-family:var(--display);font-weight:800;letter-spacing:.04em;
+    font-size:1.05rem;text-transform:uppercase;line-height:1}
+  .brand b{color:var(--oxblood);font-weight:800}
+  nav.links{display:flex;gap:1.4rem;align-items:center}
+  nav.links a{font-family:var(--data);font-size:.72rem;text-transform:uppercase;
+    letter-spacing:.16em;color:var(--ash);text-decoration:none;transition:color .2s}
+  nav.links a:hover,nav.links a:focus-visible{color:var(--bone)}
+  .support-btn{
+    font-family:var(--data);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--bone);text-decoration:none;
+    border:1px solid var(--brass-dim);padding:.5rem .85rem;border-radius:2px;
+    transition:border-color .2s,background .2s,color .2s;
+  }
+  .support-btn:hover,.support-btn:focus-visible{border-color:var(--brass);background:var(--brass);color:var(--gunmetal)}
+  nav.links a.hide-sm{display:inline}
+
+  /* ---- HERO : dossier cover ---- */
+  .hero{padding:clamp(3.5rem,11vh,7rem) 0 clamp(3rem,8vh,5rem)}
+  .stamp{
+    display:inline-block;font-family:var(--data);font-size:.66rem;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--brass);
+    border:1px solid var(--brass-dim);padding:.4rem .7rem;border-radius:2px;
+    margin-bottom:1.8rem;
+  }
+  .hero h1{
+    font-family:var(--display);font-weight:800;text-transform:uppercase;
+    font-size:clamp(3.1rem,12vw,8.5rem);line-height:.86;letter-spacing:.005em;
+    margin:0;color:var(--bone);
+  }
+  .hero h1 .and{display:block;font-size:.42em;font-weight:600;letter-spacing:.4em;
+    color:var(--brass);margin:.35em 0;padding-left:.3em}
+  .hero h1 .steel{color:var(--bone);
+    text-shadow:0 0 0 transparent;
+    -webkit-text-stroke:1px var(--brass-dim);}
+  .hero__lede{
+    max-width:46ch;margin:2rem 0 0;font-family:var(--lore);font-size:1.18rem;
+    color:#cfc7b3;line-height:1.6;
+  }
+  .hero__lede em{color:var(--bone);font-style:italic}
+  .hero__cta{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.4rem;align-items:center}
+  .btn{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
+    font-weight:700;font-size:1rem;text-decoration:none;
+    padding:.85rem 1.6rem;border-radius:2px;display:inline-flex;align-items:center;gap:.6rem;
+    transition:transform .15s,background .2s,color .2s,border-color .2s;
+  }
+  .btn--solid{background:var(--oxblood);color:var(--bone);border:1px solid var(--oxblood)}
+  .btn--solid:hover,.btn--solid:focus-visible{background:#94352a;transform:translateY(-2px)}
+  .btn--ghost{border:1px solid var(--brass-dim);color:var(--bone)}
+  .btn--ghost:hover,.btn--ghost:focus-visible{border-color:var(--brass);color:var(--brass)}
+  .btn .tick{font-family:var(--data);font-size:.7rem;letter-spacing:.1em;opacity:.8}
+
+  /* section scaffolding */
+  section{padding:clamp(3.5rem,9vh,6rem) 0;border-top:1px solid var(--hairline)}
+  .sec-head{display:flex;align-items:baseline;gap:1rem;margin-bottom:2.6rem;flex-wrap:wrap}
+  .sec-head .idx{font-family:var(--data);color:var(--brass);font-size:.8rem;letter-spacing:.2em}
+  .sec-head h2{font-family:var(--display);text-transform:uppercase;font-weight:700;
+    font-size:clamp(1.7rem,4.5vw,2.8rem);letter-spacing:.02em;margin:0;line-height:1}
+
+  /* ---- WHY THIS EXISTS ---- */
+  .creed{display:grid;grid-template-columns:1fr;gap:2.2rem;max-width:62ch}
+  .creed p{margin:0;font-size:1.22rem;line-height:1.7}
+  .creed p .drop{color:var(--oxblood);font-family:var(--display);font-weight:800;
+    font-size:1.1em;text-transform:uppercase;letter-spacing:.02em}
+  .creed .pull{font-family:var(--display);text-transform:uppercase;font-weight:600;
+    font-size:clamp(1.4rem,3.6vw,2rem);line-height:1.15;color:var(--brass);
+    letter-spacing:.01em;border-left:2px solid var(--oxblood);padding-left:1.2rem;max-width:none}
+
+  /* ---- GAMES : theater dossiers ---- */
+  .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.4rem}
+  .game{
+    position:relative;background:var(--steel);border:1px solid var(--hairline);
+    border-radius:3px;padding:1.5rem 1.5rem 1.4rem;overflow:hidden;
+    transition:border-color .25s,transform .2s,background .25s;
+    display:flex;flex-direction:column;min-height:260px;
+  }
+  .game:hover{border-color:var(--brass-dim);transform:translateY(-3px);background:var(--steel-2)}
+  .game::before{
+    content:attr(data-theater);position:absolute;top:1rem;right:1.1rem;
+    font-family:var(--data);font-size:.6rem;letter-spacing:.18em;color:var(--ash);text-transform:uppercase;
+  }
+  .game__sig{font-family:var(--data);font-size:.64rem;letter-spacing:.2em;color:var(--brass);
+    text-transform:uppercase;margin-bottom:1.4rem}
+  .game h3{font-family:var(--display);text-transform:uppercase;font-weight:700;
+    font-size:1.7rem;line-height:.95;margin:0 0 .5rem;letter-spacing:.01em}
+  .game .era{font-family:var(--data);font-size:.66rem;color:var(--ash);letter-spacing:.12em;
+    text-transform:uppercase;margin-bottom:.9rem}
+  .game p{font-size:.98rem;color:#c4bca8;line-height:1.55;margin:0 0 1.4rem}
+  .game__foot{margin-top:auto;display:flex;gap:1.1rem;align-items:center;
+    border-top:1px solid var(--hairline);padding-top:1rem}
+  .game__foot a{font-family:var(--data);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+    text-decoration:none;color:var(--bone);transition:color .2s}
+  .game__foot a.free{color:var(--brass)}
+  .game__foot a:hover{color:var(--oxblood)}
+  .placeholder-note{font-family:var(--data);font-size:.64rem;color:var(--ash);
+    letter-spacing:.08em;margin-top:1.6rem;text-transform:uppercase}
+
+  /* ---- HOW IT PLAYS / mechanics strip ---- */
+  .mech{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem}
+  .mech__item{border-top:2px solid var(--oxblood);padding-top:1rem}
+  .mech__item .num{font-family:var(--data);font-size:.72rem;color:var(--brass);letter-spacing:.18em}
+  .mech__item h4{font-family:var(--display);text-transform:uppercase;font-weight:700;
+    font-size:1.25rem;margin:.5rem 0 .5rem;letter-spacing:.02em}
+  .mech__item p{margin:0;font-size:.98rem;color:#c4bca8;line-height:1.55}
+
+  /* ---- SUPPORT ---- */
+  .support{display:grid;grid-template-columns:1.2fr .8fr;gap:3rem;align-items:start}
+  .support__copy p{font-size:1.16rem;line-height:1.7;margin:0 0 1.2rem;max-width:48ch}
+  .tiers{border:1px solid var(--hairline);border-radius:3px;background:var(--steel);overflow:hidden}
+  .tier{display:flex;justify-content:space-between;align-items:center;gap:1rem;
+    padding:1.05rem 1.3rem;border-bottom:1px solid var(--hairline)}
+  .tier:last-child{border-bottom:0}
+  .tier .amt{font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--brass)}
+  .tier .lbl{font-family:var(--data);font-size:.66rem;letter-spacing:.1em;color:#c4bca8;
+    text-transform:uppercase;text-align:right;line-height:1.4}
+  .support__cta{margin-top:1.6rem}
+
+  /* ---- FOOTER ---- */
+  footer{border-top:1px solid var(--hairline);padding:3rem 0 4rem;margin-left:var(--rail)}
+  .foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,64px);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap}
+  .foot__brand{font-family:var(--display);font-weight:800;text-transform:uppercase;
+    font-size:1.6rem;letter-spacing:.03em;line-height:1}
+  .foot__brand b{color:var(--oxblood)}
+  .foot__brand span{display:block;font-family:var(--data);font-size:.66rem;color:var(--ash);
+    letter-spacing:.14em;margin-top:.7rem;text-transform:none}
+  .foot__links{display:flex;gap:1.6rem;flex-wrap:wrap}
+  .foot__links a{font-family:var(--data);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ash);text-decoration:none;transition:color .2s}
+  .foot__links a:hover{color:var(--bone)}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+  :focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+
+  /* ---- responsive ---- */
+  @media (max-width:820px){
+    .support{grid-template-columns:1fr;gap:2rem}
+    nav.links a.hide-sm{display:none}
+  }
+  @media (max-width:560px){
+    body{font-size:17px}
+    :root{--rail:34px}
+    .ruler__num{font-size:.52rem}
+    nav.links{gap:.9rem}
+    .brand{font-size:.9rem}
+    .hero h1 .steel{-webkit-text-stroke:.5px var(--brass-dim)}
+  }
+</style>
+</head>
+<body>
+
+<!-- SIGNATURE: range ruler -->
+<div class="ruler" aria-hidden="true">
+  <div class="ruler__ticks" id="ticks"></div>
+  <div class="ruler__marker" id="marker" style="top:0"></div>
+</div>
+
+<header class="bar">
+  <div class="bar__in">
+    <div class="brand">Wound&nbsp;<b>&amp;</b>&nbsp;Steel</div>
+    <nav class="links" aria-label="Primary">
+      <a href="#creed" class="hide-sm">Why</a>
+      <a href="#games">Games</a>
+      <a href="#play" class="hide-sm">How it plays</a>
+      <a href="#support" class="support-btn">Support the project</a>
+    </nav>
+  </div>
+</header>
+
+<main class="shell">
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <span class="stamp reveal">Field Manual · Edition 01 · Rules free</span>
+      <h1 class="reveal">
+        Wound
+        <span class="and">and</span>
+        <span class="steel">Steel</span>
+      </h1>
+      <p class="hero__lede reveal">
+        An independent tabletop wargame studio. <em>Gritty, grounded combat</em>
+        carried across the battlefields of history, into dark fantastic worlds,
+        and out to grim futures. The core rules are free — print them, share them,
+        play them.
+      </p>
+      <div class="hero__cta reveal">
+        <a href="#games" class="btn btn--solid">Download free rules <span class="tick">PDF</span></a>
+        <a href="#creed" class="btn btn--ghost">Why this exists</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY THIS EXISTS -->
+  <section id="creed">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="idx">RANGE 12″</span>
+        <h2>Why this exists</h2>
+      </div>
+      <div class="creed">
+        <p class="reveal"><span class="drop">Good games</span> should be reachable. The rules
+        that make a battle worth playing don't belong behind a paywall — they belong on the
+        table, dog-eared and dice-scarred.</p>
+        <p class="pull reveal">Rules are free because the experience is yours.</p>
+        <p class="reveal">This is a solo passion project. Every system here is grounded in the
+        real texture of combat — distance, cover, the cost of a wound — whether the soldiers
+        are men in 1944 or something far stranger. If the work earns a place on your table,
+        a donation keeps the next manual coming.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section id="games">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="idx">RANGE 24″</span>
+        <h2>The catalogue</h2>
+      </div>
+      <div class="games">
+        <article class="game reveal" data-theater="Theater I">
+          <div class="game__sig">Core system</div>
+          <h3>The Long Walk</h3>
+          <div class="era">1944 · Northwest Europe</div>
+          <p>The foundation. Squad-level infantry combat where ground is paid for in
+          minutes and casualties. Authentic, unforgiving, and quick to teach.</p>
+          <div class="game__foot">
+            <a href="#" class="free">↓ Free rules</a>
+            <a href="#">Learn more</a>
+          </div>
+        </article>
+
+        <article class="game reveal" data-theater="Theater II">
+          <div class="game__sig">Supplement</div>
+          <h3>Ash &amp; Oath</h3>
+          <div class="era">Dark fantasy · Pulp</div>
+          <p>The core engine dragged into a grim fantastic age — warbands, oaths sworn
+          in blood, and steel that remembers. Pulpier, wilder, still grounded.</p>
+          <div class="game__foot">
+            <a href="#" class="free">↓ Free rules</a>
+            <a href="#">Learn more</a>
+          </div>
+        </article>
+
+        <article class="game reveal" data-theater="Theater III">
+          <div class="game__sig">Supplement</div>
+          <h3>The Quiet Sector</h3>
+          <div class="era">Horror · Skirmish</div>
+          <p>Small forces, low light, and the slow dread of not knowing what holds the
+          next room. A tense, attritional take on the system.</p>
+          <div class="game__foot">
+            <a href="#" class="free">↓ Free rules</a>
+            <a href="#">Learn more</a>
+          </div>
+        </article>
+
+        <article class="game reveal" data-theater="Theater IV">
+          <div class="game__sig">Supplement</div>
+          <h3>Cold Iteration</h3>
+          <div class="era">Grim future · Sci-fi</div>
+          <p>The same wounds, harder steel. Grounded near-future combat where the
+          technology changes everything except the cost of being hit.</p>
+          <div class="game__foot">
+            <a href="#" class="free">↓ Free rules</a>
+            <a href="#">Learn more</a>
+          </div>
+        </article>
+      </div>
+      <p class="placeholder-note">▸ Titles &amp; blurbs are placeholders — swap in your real games, cover art, and PDF links.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT PLAYS -->
+  <section id="play">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="idx">RANGE 30″</span>
+        <h2>How it plays</h2>
+      </div>
+      <div class="mech">
+        <div class="mech__item reveal">
+          <span class="num">M-01</span>
+          <h4>Measured ground</h4>
+          <p>Every move and shot is paid in inches. Range and cover decide more than any dice roll.</p>
+        </div>
+        <div class="mech__item reveal">
+          <span class="num">M-02</span>
+          <h4>Wounds, not hit points</h4>
+          <p>Soldiers don't have health bars. They bleed, they break, and a single wound can end a plan.</p>
+        </div>
+        <div class="mech__item reveal">
+          <span class="num">M-03</span>
+          <h4>One engine, many worlds</h4>
+          <p>Learn the core once and carry it from history to fantasy to the far future without relearning.</p>
+        </div>
+        <div class="mech__item reveal">
+          <span class="num">M-04</span>
+          <h4>Table in minutes</h4>
+          <p>Free PDFs, light bookkeeping, proxies welcome. Print the rules tonight, play tomorrow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section id="support">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="idx">RANGE 36″</span>
+        <h2>Support the project</h2>
+      </div>
+      <div class="support">
+        <div class="support__copy reveal">
+          <p>The rules stay free because great games should be accessible. There's no
+          catch and no gate.</p>
+          <p>If <em>Wound and Steel</em> earns its place on your table, a donation goes
+          straight back into the work — new scenarios, new theaters, art, and the
+          printed book editions. It funds the next manual, nothing else.</p>
+          <div class="support__cta">
+            <a href="#" class="btn btn--solid">Donate via Ko-fi</a>
+          </div>
+        </div>
+        <div class="tiers reveal" aria-label="Suggested support tiers">
+          <div class="tier"><span class="amt">$5</span><span class="lbl">Thanks ·<br>early scenario PDF</span></div>
+          <div class="tier"><span class="amt">$20</span><span class="lbl">Name in the credits ·<br>bonus material</span></div>
+          <div class="tier"><span class="amt">Book</span><span class="lbl">The printed edition ·<br>full art &amp; lore</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot__in">
+    <div class="foot__brand">
+      Wound <b>&amp;</b> Steel
+      <span>Made with passion — thank you for playing.</span>
+    </div>
+    <nav class="foot__links" aria-label="Footer">
+      <a href="#games">Games</a>
+      <a href="#play">How it plays</a>
+      <a href="#support">Support</a>
+      <a href="#">itch.io</a>
+      <a href="#">Community</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Build the range ruler ticks
+  var ticks=document.getElementById('ticks');
+  if(ticks){
+    var count=40; // visual marks down the rail
+    for(var i=0;i<=count;i++){
+      var t=document.createElement('div');
+      var major=(i%5===0);
+      t.className='ruler__tick '+(major?'major':'minor');
+      t.style.top=(i/count*100)+'%';
+      ticks.appendChild(t);
+      if(major){
+        var n=document.createElement('div');
+        n.className='ruler__num';
+        n.style.top=(i/count*100)+'%';
+        n.textContent=(i*3)+'"'; // labelled in inches
+        ticks.appendChild(n);
+      }
+    }
+  }
+  // Marker tracks scroll progress
+  var marker=document.getElementById('marker');
+  function onScroll(){
+    var h=document.documentElement;
+    var p=h.scrollTop/(h.scrollHeight-h.clientHeight||1);
+    if(marker) marker.style.top=(p*100)+'%';
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  // Scroll reveal
+  var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')});
+  }else if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}});
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+  }else{
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')});
+  }
+})();
+</script>
+</body>
+</html>
